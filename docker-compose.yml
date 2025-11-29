@@ -13,6 +13,7 @@ services:
       - "5432:5432"                  # Maps localhost:5432 to container:5432
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./migration:/docker-entrypoint-initdb.d
 
 volumes:
   pg_data:
