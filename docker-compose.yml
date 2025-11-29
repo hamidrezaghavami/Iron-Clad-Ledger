@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: ledger_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin           # Your username
+      POSTGRES_PASSWORD: hamid123 # Your password
+      POSTGRES_DB: ironclad_ledger   # Your database name
+    ports:
+      - "5432:5432"                  # Maps localhost:5432 to container:5432
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:

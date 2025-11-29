@@ -1,0 +1,10 @@
+# Database data (if you ever use local folders)
+postgres_data/
+pgdata/
+
+# Environment variables (Sensitive!)
+.env
+
+# System files
+.DS_Store
+*.log
