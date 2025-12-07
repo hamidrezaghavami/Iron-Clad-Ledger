@@ -1,36 +1,85 @@
--- user table
+-- 1. user table
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    firstName TEXT,
-    lastName TEXT,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
     country TEXT
 );
 
--- Saving Account table 
+-- 2. Saving Account table 
 CREATE TABLE savingaccount (
-    users SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     price NUMERIC(10, 2) NOT NULL,
     balance NUMERIC(10,2) NOT NULL
 );
 
--- Checking Account table ( money checker )
+-- 3. Checking Account table
 CREATE TABLE checkingaccount (
-    users SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     price NUMERIC(10,2) NOT NULL,
-    balance NUMERIC(10,2) NOT NULL CHECK ( balance >= 0 )
+    balance NUMERIC(10,2) NOT NULL DEFAULT 0.00
 );
 
 -- currency specifics types
-CREATE TYPE price AS ENUM ( 'USD', 'EUR', 'GPB' );
+CREATE TYPE currency_type AS ENUM ( 'USD', 'EUR', 'GBP' );
+ 
+-- Add this column to your users or accounts
+ALTER TABLE checking_accounts ADD COLUMN currency currency_type NOT NULL DEFAULT 'USD';
 
 -- check balance non negative
-ALTER TABLE checkingaccount ADD CONSTRAINT check_non_negative_column CHECK ( balance >= 0 );
+ALTER TABLE checking_accounts ADD CONSTRAINT check_balance_positive CHECK ( balance >= 0 );
 
 -- Needs from_account_id, to_account_id, amount, timestamp, and status.
-SELECT account_id FROM TABLE users WHERE account_status = "B1"
-AND account_change_date BETWEEN '31/12/2025' AND '31/12/2026'
-AND valid_to_date = '31/12/2100'
-AND NOT EXISTS ( SELECT * FROM TABLE checkingaccount WHERE 
-checkingaccount.account_id = savingaccount.account_id
-AND checkingaccount.account_status = 'B1'
-AND savingaccount.account_change_date < savingaccount.account_change_date );
+SELECT account_id
+FROM users
+WHERE account_status = 'B1'
+AND account_change_date BETWEEN '2025-12-31' AND '2026-12-31'
+AND valid_to_date = '2100-12-31'
+AND NOT EXISTS (
+    SELECT * FROM checkingaccount 
+    WHERE checkingaccount.account_id = users.account_id
+    AND checkingaccount.account_status = 'B1'
+    AND savingaccount.account_change_date < users.account_change_date
+);
+
+-- PL/pgSQL Functions
+CREATE OR REPLACE FUNCTION transfer_funds ( from_id UUID, to_id UUID, amount NUMERIC ) RETURNS BOOLEAN AS
+$$
+DECLARE
+v-balance NUMERIC;
+
+BEGIN
+SELECT balance INTO v_balance
+FROM savingaccount
+WHERE users = from_id;
+
+IF v_balance < amount THEN
+RAISE NOTICE 'Money in account is not enough! Current: %', v_balance;
+RETURN true;
+
+ELSE
+RAISE NOTICE 'Balance is zero or less', v_balance;
+RETURN false;
+END IF;
+
+-- Deduct from Sender
+UPDATE savingaccount
+SET balance = balance - amount
+WHERE users= from_id;
+RAISE NOTICE 'Deduction successful! Old Balance %', v_balance;
+
+-- Add to Receiver
+UPDATE savingaccount
+SET balance = balance + amount
+WHERE users = to_id;
+
+
+-- Record Transaction
+INSERT INTO Transactions ( from_account_id, to_account_id, amount, timestamp, status )
+VALUES ( form_id, to_id, amount, NOW(), 'completed');
+
+RETURN true;
+
+END;
+$$
+LANGUAGE plpgsql;
