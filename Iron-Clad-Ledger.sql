@@ -1,4 +1,4 @@
--- 1. user table
+-- user table
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     first_name TEXT NOT NULL,
@@ -6,7 +6,7 @@ CREATE TABLE users (
     country TEXT
 );
 
--- 2. Saving Account table 
+-- Saving Account table 
 CREATE TABLE savingaccount (
     id SERIAL PRIMARY KEY,
     price NUMERIC(10, 2) NOT NULL,
@@ -41,6 +41,15 @@ AND NOT EXISTS (
     AND checkingaccount.account_status = 'B1'
     AND savingaccount.account_change_date < users.account_change_date
 );
+
+-- inserting some data into our user table
+INSERT INTO users ( id, first_name, last_name, country )
+VALUES
+(1, 'Elena', 'Rossi', 'Italy'),
+(2, 'David', 'Kim', 'South Korea'),
+(3, 'Fatima', 'Al-Sayed', 'Egypt'),
+(4, 'Lukas', 'Weber', 'Germany'),
+(5, 'Sofia', 'Silva', 'Brazil');
 
 -- PL/pgSQL Functions
 CREATE OR REPLACE FUNCTION transfer_funds ( from_id UUID, to_id UUID, amount NUMERIC ) RETURNS BOOLEAN AS
