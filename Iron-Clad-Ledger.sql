@@ -17,27 +17,27 @@ CREATE TABLE savingaccount (
 CREATE TABLE checkingaccount (
     id SERIAL PRIMARY KEY,
     price NUMERIC(10,2) NOT NULL,
-    balance NUMERIC(10,2) NOT NULL DEFAULT 0.00
+    balance NUMERIC(10,2) NOT NULL DEFAULT 0.00 
 );
 
 -- currency specifics types
 CREATE TYPE currency_type AS ENUM ( 'USD', 'EUR', 'GBP' );
  
 -- Add this column to your users or accounts
-ALTER TABLE checking_accounts ADD COLUMN currency currency_type NOT NULL DEFAULT 'USD';
+ALTER TABLE checkingaccounts ADD COLUMN currency currency_type NOT NULL DEFAULT 'USD';
 
 -- check balance non negative
-ALTER TABLE checking_accounts ADD CONSTRAINT check_balance_positive CHECK ( balance >= 0 );
+ALTER TABLE checkingaccounts ADD CONSTRAINT check_balance_positive CHECK ( balance >= 0 );
 
 -- Needs from_account_id, to_account_id, amount, timestamp, and status.
-SELECT account_id
+SELECT id
 FROM users
 WHERE account_status = 'B1'
 AND account_change_date BETWEEN '2025-12-31' AND '2026-12-31'
 AND valid_to_date = '2100-12-31'
 AND NOT EXISTS (
     SELECT * FROM checkingaccount 
-    WHERE checkingaccount.account_id = users.account_id
+    WHERE checkingaccount.id = users.id
     AND checkingaccount.account_status = 'B1'
     AND savingaccount.account_change_date < users.account_change_date
 );
@@ -50,6 +50,18 @@ VALUES
 (3, 'Fatima', 'Al-Sayed', 'Egypt'),
 (4, 'Lukas', 'Weber', 'Germany'),
 (5, 'Sofia', 'Silva', 'Brazil');
+
+-- insert data for Saving account
+INSERT INTO savingaccount ( price, balance )
+VALUES
+( 10.00, 500,00),
+( 12.00, 400.00);
+
+-- insert data for checking account
+INSERT INTO checkingaccount ( id, price, balance )
+VALUES
+(15.00, 1200.00, 'EUR'),
+(13.00, 1255.00, 'USD');
 
 -- PL/pgSQL Functions
 CREATE OR REPLACE FUNCTION transfer_funds ( from_id UUID, to_id UUID, amount NUMERIC ) RETURNS BOOLEAN AS
