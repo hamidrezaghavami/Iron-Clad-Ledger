@@ -1,106 +1,72 @@
-The Iron-Clad Ledger
+# 🏦 The Iron-Clad Ledger
 
-📖 #Overview
+**A High-Integrity Banking Database System built with PostgreSQL.**
 
-The Iron-Clad Ledger is a high-integrity financial database system built entirely within PostgreSQL.
+## 📖 Overview
+[cite_start]The **Iron-Clad Ledger** is a robust backend database system designed to handle multi-currency accounts, secure money transfers, and automated monthly reporting[cite: 3]. [cite_start]The core philosophy of this project is data integrity: it is architected to make it impossible to "lose" money, even in the event of server crashes or concurrent high-volume transactions[cite: 4].
 
-Unlike traditional architectures that rely on application-layer logic for data consistency, this project enforces business rules, transactional integrity, and race condition prevention directly at the database level using PL/pgSQL Stored Procedures, Triggers, and strict Schema Constraints.
+Unlike standard CRUD applications, this system enforces business logic directly at the database level using Stored Procedures, Triggers, and Strict Constraints.
 
-The goal is to simulate a banking environment where data loss is mathematically impossible, handling multi-currency accounts, atomic transfers, and automated auditing.
+---
 
-🚀 #Key Features
+## 🚀 Key Features & Engineering Challenges
 
-ACID Compliance: All fund transfers utilize atomic transactions with rollback capabilities to ensure money is never created or destroyed during failures.
+### 1. 🛡️ Strict Schema & Data Safety (Phase 1)
+* [cite_start]**Zero Negative Balances:** Implemented `CHECK` constraints to ensure account balances never drop below zero at the database level[cite: 12].
+* [cite_start]**Precision Math:** utilized `NUMERIC/DECIMAL` types instead of `FLOAT` or `DOUBLE` to prevent floating-point rounding errors common in financial software[cite: 13, 14].
+* [cite_start]**Multi-Currency Support:** Strict enforcement of currency codes (USD, EUR, GBP) per account[cite: 11].
 
-Concurrency Control: Implements SELECT ... FOR UPDATE row locking to prevent race conditions (double-spending) during simultaneous high-frequency transactions.
+### 2. 💸 ACID-Compliant Money Transfers (Phase 2)
+* [cite_start]**Atomic Transactions:** Built a custom PL/pgSQL function `transfer_funds` that handles debits and credits in a single atomic block using `BEGIN / COMMIT`[cite: 22, 28].
+* [cite_start]**Race Condition Handling:** Solved potential double-spending issues by implementing row-level locking (`SELECT ... FOR UPDATE`) to handle simultaneous transaction requests safely[cite: 30, 31].
+* [cite_start]**Automatic Rollbacks:** If any step fails (e.g., insufficient funds or locked account), the entire transaction rolls back to prevent data inconsistency[cite: 29].
 
-Strict Typing: Utilizes NUMERIC types for precise financial calculations (avoiding floating-point errors) and INET for security logging.
+### 3. 🌍 International Logic & Migrations (Phase 3)
+* [cite_start]**Zero-Downtime Migration:** Successfully altered the live schema to support new features without corrupting existing transaction history[cite: 33].
+* [cite_start]**Automated Fee System:** Implemented logic to detect international transfers (e.g., USA to Turkey) and automatically apply a **1% transaction fee**[cite: 35].
+* [cite_start]**System Revenue Tracking:** Fees are automatically routed to a designated "System Bank Account"[cite: 38].
 
-Automated Auditing: Database triggers automatically record state changes to sensitive tables (Users/Accounts) into an immutable audit_logs table.
+### 4. ⚡ Performance Optimization (Phase 4)
+* [cite_start]**Efficient Reporting:** Created a `monthly_user_summary` view to calculate deposits, withdrawals, and net worth instantly[cite: 43].
+* **Solving the N+1 Problem:** Optimized query performance by implementing Database Indexes on the `transactions` table (`from_account_id`, `to_account_id`, `timestamp`). [cite_start]This reduced report generation time from linear scans to constant-time index seeks (<50ms)[cite: 48, 51, 52].
 
-Performance: Optimized reporting using Materialized Views and Window Functions for monthly statements.
+### 5. 👻 "Invisible" Audit System (Phase 5)
+* [cite_start]**Database Triggers:** Implemented a "Watcher" system that automatically intercepts `UPDATE` commands on sensitive tables[cite: 56].
+* [cite_start]**Tamper-Proof Logging:** Any change to a user's name or account status is automatically recorded in an `audit_logs` table with `OLD` and `NEW` values, completely independent of the application layer[cite: 57].
 
-🛠 #Database Schema
+---
 
-The core logic revolves around four primary entities:
+## 🛠️ Technical Stack
+* **Database:** PostgreSQL
+* **Languages:** SQL, PL/pgSQL
+* **Concepts:** ACID Transactions, Stored Procedures, Triggers, Views, Indexing, Normalization.
 
-users: Identity management with PII protections.
+---
 
-accounts: Ledger accounts with strict non-negative constraints and currency isolation.
+## 📂 Project Structure
+The project is built incrementally via the following migration scripts:
 
-transactions: Double-entry bookkeeping records.
+* `001_initial_schema.sql`: Sets up Users, Accounts, and Transaction tables.
+* `002_transaction_logic.sql`: Defines the atomic `transfer_funds` stored procedure.
+* `003_migration_fees.sql`: Updates schema for international fees and system revenue.
+* `004_reporting_views.sql`: Adds performance indexes and reporting views.
+* `005_audit_system.sql`: Implements triggers for audit logging.
 
-audit_logs: Historical tracking of data mutations.
+## 🏁 How to Run
+To deploy the full system, execute the SQL files in order:
 
-💻 #Installation & Setup
+```bash
+# 1. Initialize Schema
+psql -U postgres -d banking_db -f 001_initial_schema.sql
 
-Prerequisites
+# 2. Add Transaction Logic
+psql -U postgres -d banking_db -f 002_transaction_logic.sql
 
-PostgreSQL 14 or higher.
+# 3. Apply Migrations
+psql -U postgres -d banking_db -f 003_migration_fees.sql
 
-psql CLI tool or a GUI like pgAdmin/DBeaver.
+# 4. Create Reports & Indexes
+psql -U postgres -d banking_db -f 004_reporting_views.sql
 
-Quick Start
-
-Clone the repository:
-
-git clone [https://github.com/hamidrezaghavami/iron-clad-ledger.git](https://github.com/hamidrezaghavami/iron-clad-ledger.git)
-cd iron-clad-ledger
-
-
-Initialize the Database:
-
-psql -U postgres -f init_schema.sql
-
-
-Load Seed Data (Optional):
-
-psql -U postgres -d ledger_db -f seeds.sql
-
-
-⚙️ #Usage
-
-Executing a Transfer
-
-This system uses Stored Procedures to handle logic. Do not insert into the transactions table directly.
-
--- Transfer $100.00 from Account ID 1 to Account ID 5
-CALL transfer_funds(
-    sender_id => 1,
-    receiver_id => 5,
-    amount => 100.00
-);
-
-
-Generating a Monthly Statement
-
-Reports are generated via optimized views to avoid N+1 query performance issues.
-
-SELECT * FROM monthly_user_summary 
-WHERE user_id = 1 
-AND month = '2023-10';
-
-
-🧪 #Testing Concurrency
-
-To verify the system's resilience against race conditions, you can run the provided concurrency script (Python/Bash) which attempts to fire 50 simultaneous transfers from a single account.
-
-Expected Result: Correct balance deduction without going negative.
-
-📚 #Concepts Demonstrated
-
-This project serves as a practical implementation of advanced RDBMS concepts:
-
-Database Normalization (3NF)
-
-Pessimistic Locking strategies
-
-Stored Procedures (PL/pgSQL)
-
-Database Migrations & Versioning
-
-Query Optimization (EXPLAIN ANALYZE)
-
-📝 #License
-
-This project is licensed under the MIT License.
+# 5. Attach Audit Triggers
+psql -U postgres -d banking_db -f 005_audit_system.sql
