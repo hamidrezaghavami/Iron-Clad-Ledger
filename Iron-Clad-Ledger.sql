@@ -40,9 +40,9 @@ ALTER TABLE checkingaccount ADD COLUMN currency currency_type NOT NULL DEFAULT '
 ALTER TABLE checkingaccount ADD CONSTRAINT check_balance_positive CHECK ( balance >= 0 );
 
 -- Add missing columns to Users
-ALTER TYPE users ADD COLUMN account_status TEXT;
-ALTER TYPE users ADD COLUMN account_change_date DATE;
-ALTER TYPE users ADD COLUMN valid_to_date DATE;
+ALTER TABLE users ADD COLUMN account_status TEXT;
+ALTER TABLE users ADD COLUMN account_change_date DATE;
+ALTER TABLE users ADD COLUMN valid_to_date DATE;
 
 -- Add missing columns to checking account
 ALTER TABLE checkingaccount ADD COLUMN account_status TEXT;
@@ -61,7 +61,7 @@ AND NOT EXISTS (
     SELECT 1
     FROM checkingaccount, savingaccount
     WHERE checkingaccount.id = users.id
-    AND checkingaccount.id = users.id
+    AND savingaccount.id = users.id
     AND checkingaccount.account_status = 'B1'
     AND savingaccount.account_change_date < users.account_change_date
 );
