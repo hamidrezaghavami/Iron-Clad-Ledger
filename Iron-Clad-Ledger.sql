@@ -102,14 +102,15 @@ SELECT country INTO v_sender_country FROM users WHERE id = from_id;
 SELECT country INTO v_reciver_country FROM users WHERE id = to_id;
 
 -- calculate fee (1% if countries are different)
-IF v_sender_country <> v_reciver_country THEN
+IF v_sender_country <> v_receiver_country THEN
 v_fee := amount * 0.01;
 END IF;
 
 -- Check Sender's Balance
 SELECT balance INTO v_balance
 FROM savingaccount
-WHERE id = from_id;
+WHERE id = from_id
+FOR UPDATE; -- missing line 
 
 IF v_balance < (amount + v_fee ) THEN
 RAISE NOTICE 'Not enough funds! Balance: %, Needed: %', v_balance, (amount + v_fee);

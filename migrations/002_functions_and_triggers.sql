@@ -18,7 +18,10 @@ BEGIN
     END IF;
 
     -- 3. Check Sender's Balance
-    SELECT balance INTO v_balance FROM savingaccount WHERE id = from_id;
+    SELECT balance INTO v_balance 
+    FROM savingaccount 
+    WHERE id = from_id
+    FOR UPDATE; -- missing line
 
     IF v_balance < (amount + v_fee) THEN
         RAISE NOTICE 'Not enough funds! Balance: %, Needed: %', v_balance, (amount + v_fee);

@@ -38,9 +38,9 @@ Unlike standard CRUD applications, this system enforces business logic directly 
 ---
 
 ## 🛠️ Technical Stack
-* **Database:** PostgreSQL
-* **Languages:** SQL, PL/pgSQL
-* **Concepts:** ACID Transactions, Stored Procedures, Triggers, Views, Indexing, Normalization.
+**Database:** PostgreSQL
+**Languages:** SQL, PL/pgSQL
+**Concepts:** ACID Transactions, Stored Procedures, Triggers, Views, Indexing, Normalization.
 
 ---
 
