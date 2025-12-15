@@ -18,7 +18,7 @@ Unlike standard CRUD applications, this system enforces business logic directly 
 **Multi-Currency Support:** Strict enforcement of currency codes (USD, EUR, GBP) per account.
 
 ### 2. 💸 ACID-Compliant Money Transfers (Phase 2)
-**Atomic Transactions:** Built a custom PL/pgSQL function transfer_funds that handles debits and credits in a single atomic block using BEGIN / COMMIT.
+**Atomic Transactions:** handles debits and credits in a single atomic block using **PL/pgSQL Transaction Management**.
 **Race Condition Handling:** Solved potential double-spending issues by implementing row-level locking (SELECT ... FOR UPDATE) to handle simultaneous transaction requests safely.
 **Automatic Rollbacks:** If any step fails (e.g., insufficient funds or locked account), the entire transaction rolls back to prevent data inconsistency.
 
@@ -49,7 +49,7 @@ The project is built incrementally via the following migration scripts:
 
 * 001_initial_schema.sql: Sets up Users, Accounts, and Transaction tables.
 * 002_transaction_logic.sql: Defines the atomic transfer_funds stored procedure.
-* 003_migration_fees.sql: Updates schema for international fees and system revenue.
+* 003_migration_fees.sql: (Merged into initial schema for stability).
 * 004_reporting_views.sql: Adds performance indexes and reporting views.
 * 005_audit_system.sql: Implements triggers for audit logging.
 

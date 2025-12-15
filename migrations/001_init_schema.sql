@@ -29,6 +29,24 @@ CREATE TABLE Transactions (
     timestamp TIMESTAMP,
     status TEXT,
     fee NUMERIC(10,2) NOT NULL DEFAULT 0.00
-)
+);
 
-SELECT id INTO v_system_user_id FROM users WHERE first_name = 'System' AND last_name = 'Bank' LIMIT 1;
+INSERT INTO users ( id, first_name, last_name, country ) VALUES
+(1, 'Elena', 'Rossi', 'Italy'),
+(2, 'David', 'Kim', 'South Korea'),
+(3, 'Fatima', 'Al-Sayed', 'Egypt'),
+(4, 'Lukas', 'Weber', 'Germany'),
+(5, 'Sofia', 'Silva', 'Brazil'),
+(99, 'System', 'Bank', 'Switzerland');
+
+-- seed data for savingaccount 
+INSERT INTO savingaccount (user_id, price, balance) VALUES
+(1, 10.00, 1000.00),
+(2, 10.00, 1000.00),
+(3, 10.00, 1000.00),
+(99, 0.00, 0.00);
+
+-- Seed Checking Accounts
+INSERT INTO checkingaccount (user_id, balance) VALUES
+(1, 1200.00),
+(2, 1255.00);
