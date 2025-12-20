@@ -99,7 +99,7 @@ v_fee NUMERIC := 0.00; -- default 0
 BEGIN
 -- check for International Transfer
 SELECT country INTO v_sender_country FROM users WHERE id = from_id;
-SELECT country INTO v_reciver_country FROM users WHERE id = to_id;
+SELECT country INTO v_receiver_country FROM users WHERE id = to_id;
 
 -- calculate fee (1% if countries are different)
 IF v_sender_country <> v_receiver_country THEN
@@ -110,7 +110,7 @@ END IF;
 SELECT balance INTO v_balance
 FROM savingaccount
 WHERE id = from_id
-FOR UPDATE; -- missing line 
+FOR UPDATE;
 
 IF v_balance < (amount + v_fee ) THEN
 RAISE NOTICE 'Not enough funds! Balance: %, Needed: %', v_balance, (amount + v_fee);
