@@ -93,7 +93,7 @@ $$
 DECLARE
 v_balance NUMERIC;
 v_sender_country TEXT;
-v_reciver_country TEXT;
+v_receiver_country TEXT;
 v_fee NUMERIC := 0.00; -- default 0
 
 BEGIN
